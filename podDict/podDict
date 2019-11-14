@@ -1,0 +1,41 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      podDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// viscosity for the case (see => casedirectory/constant/transportProperties)
+nu    nu [0 2 -1 0 0 0 0] 2e-03;
+
+// # of POD basis for reduced order model.
+nDim    nDim [0 0 0 0 0 0 0] 5;
+
+// Timestep for the reduced order model.
+dt    dt [0 0 1 0 0 0 0] 1e-05;
+
+//Closure/Artificial viscosity term. You can change this term depending upon energy decay.
+//This term will accept positive(to add viscosity) or negative(to substract viscosity) values. 
+artificial_nu   artificial_nu [0 2 -1 0 0 0 0] 0;
+
+// Time coefficient update value (Keep it zero as default. Only change
+// if you know what you are doing.
+writeFreq   writeFreq [0 0 0 0 0 0 0] 0;
+
+// Total case runtime (Keep it zero as default. If you change runtime, you'll have to
+// manually change writeFreq also to match with case directory. Only change if you
+// what you are doing.
+tEnd    tEnd [0 0 0 0 0 0 0] 0;
+
+// ************************************************************************* //
