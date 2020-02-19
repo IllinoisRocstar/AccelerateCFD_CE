@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 
   if(writeFreq == 0){
     writeSteps = nSteps/numDirs;}
-  else{int writeSteps = writeFreq;}
+  else{writeSteps = writeFreq;}
 
   ofstream afiles;
   afiles.open("avals.csv");
