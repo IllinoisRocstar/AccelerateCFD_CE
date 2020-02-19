@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
 
   double da = 0.0; // Initializing da
 
-  for (int t=0; t<nSteps; t++){
+  for (int t=0; t<nSteps+1; t++){
   
     for (int k=0; k<nDim; k++){
       da = constant[k];
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
   ofstream afiles;
   afiles.open("avals.csv");
 
-  for (int i=0; i<nSteps; i++){
+  for (int i=0; i<nSteps+1; i++){
     if(i%writeSteps == 0){
       //double tcol = ceil(dt*i*100)/100;
       double tcol = dt*i;
