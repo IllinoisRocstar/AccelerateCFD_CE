@@ -153,11 +153,11 @@ AccelerateCFD has a post process utility which allows users to get some addition
 
 To initiate calculation of full order time varying coefficients (here called as "aPOD"), user needs to run following command. This will output "aPOD.csv" file.
 
-    $ podPostProcess get_aPOD
+    $ podPostProcess get_aPOD <Specify Number of Modes to Use> (i.e podPostProcess get_aPOD 100)
 
 For parallel run,
 
-    $ mpirun -np <number of processors> podPostProcess get_aPOD -parallel
+    $ mpirun -np <number of processors> podPostProcess get_aPOD <Specify Number of Modes to Use> -parallel
   
 
 ## Contact/Feedback/Issues ##
