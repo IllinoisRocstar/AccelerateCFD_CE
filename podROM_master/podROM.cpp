@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
   double timeElapsed = 0.0;   // time counter
 
   // 2D vector for storing a values at every time step  
-  std::vector<std::vector<double>> avalues(nSteps+1, std::vector<double>(nDim,0.0));
+  std::vector<std::vector<double>> avalues;
 
   // 1D vector to store all a's in one time iteration
   std::vector<double> avals(nDim,0.0);
@@ -184,10 +184,10 @@ int main(int argc, char *argv[])
      avals[k] = prevAvals[k] + da*dt; // updating current a values
     }
 
-    for (int i=0; i<nDim; i++){
+    for (int i=0; i<nDim; i++)
       prevAvals[i] = avals[i]; // updating previous avals
-      avalues[t][i] = avals[i]; // storing a values for in 2D vector for later
-    }
+    
+    avalues.push_back(prevAvals);
 
     timeElapsed += dt; 
     cout << "t = " << timeElapsed << endl; // Case progress info in terminal
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
   ofstream afiles;
   afiles.open("avals.csv");
 
-  for (int i=0; i<nSteps+1; i++){
+  for (int i=0; i<avalues.size(); i++){
     if(i%writeSteps == 0){
       //double tcol = ceil(dt*i*100)/100;
       double tcol = dt*i;
