@@ -23,7 +23,7 @@ AccelerateCFD_Community_Edition follows semantic versioning. The versions will b
 
 ## Modules ##
 
-There are four modules to this software. 
+There are five modules to this software. 
 
   **podBasisCalc**
   * This application calculates POD basis for velocities in CFD case directory and gives
@@ -40,6 +40,9 @@ There are four modules to this software.
   **podReconstruct**
   * This application reads in the values of time varying coefficients and reconstructs
     velocities. These reconstructed velocties are automatically written into their respective time directories of CFD case for ease of visualization.
+
+  **podPostProcess**
+  * This application allows users to obtain additional information from reduced order as well as full order models for comparison and reference purposes. Right now this utility supports calculation of time varying coefficients from full order model that can serve as a reference to reduced order time coefficients calculated using podROM utility. This utility operates based on command line arguments. All available arguments are explained later in this guide.
 
 ## Platform Requirements ##
 
@@ -145,6 +148,16 @@ Once the process completes, you will see an additional CSV file which contains v
   
 Now every time directory in CFD case has a new vector file named "Urom".
 This is the reconstructed velocity. If you have noticed, the calculations done by "podPrecompute" , "podROM", and "podReconstruct" took much less time than full LES CFD calculation would have taken. Compare both full order **(U)** and reconstructed **(Urom)** velocities in Paraview.
+
+AccelerateCFD has a post process utility which allows users to get some additional information such as full order time coefficients to compare against reduced order model time coefficients calculated using podROM utility. We will keep adding additional post processing functionality as needed and as requested by our user community.
+
+To initiate calculation of full order time varying coefficients (here called as "aPOD"), user needs to run following command. This will output "aPOD.csv" file.
+
+    $ podPostProcess get_aPOD
+
+For parallel run,
+
+    $ mpirun -np <number of processors> podPostProcess get_aPOD -parallel
   
 
 ## Contact/Feedback/Issues ##
