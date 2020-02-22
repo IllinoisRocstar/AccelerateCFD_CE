@@ -81,6 +81,16 @@ double innerProductPOD2(volTensorField v1, volSymmTensorField v2, volScalarField
   return gSum(volScalarField((v1&&v2)*cellVols));
 }
 
+bool is_numeric(std::string &strng)
+{
+    int sizeOfString = strng.length();
+    for (int i = 0; i < strng.length(); i++)
+      if (isdigit(strng[i]) == false)
+        return false;
+
+      return true;
+}
+
 int main(int argc, char *argv[])
 {
     copyrightnotice();
@@ -92,6 +102,13 @@ int main(int argc, char *argv[])
   argList::validOptions.clear();
 
   argList::validArgs.append("get_aPOD");
+	
+  argList::validArgs.append("NumOfModes");
+  argList::addOption
+  (
+    "NumOfModes",
+    "Specify number of modes to use"
+  );
 
   Foam::argList args(argc, argv);
 
@@ -101,8 +118,15 @@ int main(int argc, char *argv[])
 
   bool enable_aPOD = false;
 
-  if ((argsVec.size() > 1) && (argsVec[1] == "get_aPOD"))
+  int udfDim = 0;
+
+  if ((argsVec.size() > 1) && (argsVec[1] == "get_aPOD")) {
     enable_aPOD = true;
+
+    if (is_numeric(argsVec[2])) {
+      udfDim = std::atoi(argv[2]);
+    }
+  }
 
   if (enable_aPOD) {
 
@@ -156,6 +180,8 @@ int main(int argc, char *argv[])
   double dt = (double) dt_ds.value(); //FDM time step
   double nu_tilda = (double) closure_nu.value(); //closure viscosity
 
+  if (udfDim > 0)
+    nDim = udfDim;
   
   runTime.setTime(timeDirs.last(),0);
     
