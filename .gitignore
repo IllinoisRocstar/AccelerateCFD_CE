@@ -1,0 +1,16 @@
+# Don't track following files
+
+SampleCase/
+podBasisCalc_master/Make/linux*
+podFlowReconstruct_master/Make/linux*
+podPrecompute_master/Make/linux*
+podBasisCalc_master/Make/linux*
+podPostProcess/Make/linux*
+
+*.so
+*.o
+*.dep
+*.exe
+*.txt
+*.csv
+
