@@ -1,0 +1,9 @@
+v0.2.0
+
+- Users can now run podBasisCalc, podPrecompute, and podFlowReconstruct in parallel (on decomposed case).
+- podPrecompute serial runtime improvement.
+- User-defined time range option added to podBasisCalc, podPrecompute, and podFlowReconstruct
+(i.e podBasisCalc 100 -time 8.2:16.8, podPrecompute -time 8.2:16.8, podFlowReconstruct -time 8.2:16.8)
+- Capbility to define ROM dimension to podROM so that it will only use certain part of matrix (i.e ./podROM 100)
+- Small update to plotting utility.
+

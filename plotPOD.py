@@ -16,19 +16,26 @@ my_data = genfromtxt('podEnergy.csv', delimiter=',',skip_header=1)
 POD = my_data[:,0]
 Energy = my_data[:,2]
 IndEnergy = my_data[:,1]
+EigVals = my_data[:,3]
+pltNum = POD.size
+color = 'tab:red'
 
-plt.figure(1)
-plt.plot(POD,Energy, label='Basis Energy Line')
-plt.title("Cummulative Energy contained in POD modes for velocity")
-plt.xlabel("Number POD modes")
-plt.ylabel("Energy (%)")
-plt.plot(POD,np.linspace(100,100,POD.size), label='100% Energy Line')
-plt.plot(POD,np.linspace(90,90,POD.size), label='90% Energy Line')
-plt.legend()
+fig, ax1 = plt.subplots()
+ax1.set_xlabel('basis number')
+ax1.set_ylabel('Cumulative energy (%)',color=color)
+ax1.plot(POD[0:pltNum],Energy[0:pltNum],color=color)
+ax1.tick_params(axis='y', labelcolor=color)
+ax1.set_xlim([1,pltNum+1])
+ax1.grid()
+  
+ax2 = ax1.twinx()
+color = 'tab:blue'
+ax2.set_ylabel('Energy per basis (%)',color=color)
+ax2.plot(POD[0:pltNum],IndEnergy[0:pltNum],color=color)
+ax2.tick_params(axis='y', labelcolor=color)
+ax2.set_xlim([1,pltNum+1])
+ax2.grid()
+    
+plt.title('Flow Energy content in POD basis')
 
-plt.figure(2)
-plt.plot(POD,IndEnergy, label='Basis Energy Line')
-plt.title("Flow Energy contained in each POD mode")
-plt.xlabel("Number POD modes")
-plt.ylabel("Energy (%)")
 plt.show()
