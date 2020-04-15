@@ -76,6 +76,38 @@ void copyrightnotice()
   << std::endl;
 }
 
+volVectorField generateMeshField(Foam::Time &runTime, Foam::fvMesh &mesh,
+    const std::string &fieldName) {
+    
+  volVectorField mshField
+  (
+    IOobject
+    (
+      fieldName,
+      runTime.timeName(),
+      mesh,
+      IOobject::MUST_READ,
+      IOobject::NO_WRITE
+    ),
+    mesh
+  );
+
+  return mshField;
+}
+
+IOobject generateCustomField(Foam::Time &runTime, Foam::fvMesh &mesh,
+    const std::string &fieldName) {
+    
+    return IOobject
+    (
+      fieldName,
+      runTime.timeName(),
+      mesh,
+      IOobject::NO_READ,
+      IOobject::AUTO_WRITE
+    );
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -86,12 +118,15 @@ int main(int argc, char *argv[])
   double duration;
   start = std::clock();
 
+  timeSelector::addOptions();
+
   #include "setRootCase.H"       
   #include "createTime.H"
   #include "createNamedMesh.H"
 
   instantList timeDirs = timeSelector::select0(runTime, args);
-  runTime.setTime(0.0,0); 
+  runTime.setTime(timeDirs[0],0);
+  volVectorField Uinit = generateMeshField(runTime,mesh,"U");
 
   // Reading data from podDict
   IOdictionary podDict
@@ -106,27 +141,13 @@ int main(int argc, char *argv[])
     )
   );
 
-  dimensionedScalar nDim_ds
-  (
-  podDict.lookup("nDim")
-  );
+  dimensionedScalar nDim_ds(podDict.lookup("nDim"));
 
-  int nDim = (int) nDim_ds.value(); //# of modes used
+  int nDim = static_cast<int>(nDim_ds.value()); //# of modes used
     
   runTime.setTime(timeDirs.last(),0);
 
-  volVectorField UMean // read mean velocity field from last timestep
-  (
-    IOobject
-    (
-      "UMean",
-      runTime.timeName(),
-      mesh,
-      IOobject::MUST_READ,
-      IOobject::NO_WRITE
-    ),
-    mesh
-  );
+  volVectorField UMean = generateMeshField(runTime,mesh,"UMean");
 
   std::vector<volVectorField> sigs; // vector for storing velocity modes
 
@@ -134,36 +155,8 @@ int main(int argc, char *argv[])
   {
     std::string sigmaName;
     sigmaName = "sigma_" + std::to_string(iSig);
-        
-    sigs.push_back
-    (
-      volVectorField
-      (
-        IOobject
-        (
-          sigmaName,
-          runTime.timeName(),
-          mesh,
-          IOobject::MUST_READ,
-          IOobject::NO_WRITE
-        ),
-      mesh
-      )
-    );
+    sigs.push_back(generateMeshField(runTime,mesh,sigmaName));
   }
-
-  volVectorField Uinit // reading initial velocity
-  (
-    IOobject
-    (
-      "U",
-      "0",
-      mesh,
-      IOobject::MUST_READ,
-      IOobject::NO_WRITE
-    ),
-    mesh
-  );
     
   //Reading a values and composing 2D vector
   string line;
@@ -194,37 +187,19 @@ int main(int argc, char *argv[])
 
   // this loops through all time directories in case and writes reconstructed..
   // velocity (Urom)
-
   forAll(timeDirs,timei)
-  {    
+  {
     std::vector<double> aVect = aVals[i];
-    Info << "t = " << time[i] << nl; // Case progres info in terminal
+    Info << "t = " << timeDirs[timei].value() << nl; // Case progres info in terminal
+    runTime.setTime(timeDirs[timei],0);
 
     std::string UName;
     UName = "Urom";
-    volVectorField Urom
-    (
-      IOobject
-      (
-        UName,
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::AUTO_WRITE
-      ),
-      UMean
-    );
-          
-    Urom = dimensionedVector("0", dimLength/dimTime, Zero);
-       
-    Urom = UMean;
+    volVectorField Urom(generateCustomField(runTime,mesh,UName),UMean);
 
-    for (int i=0; i<nDim; i++){
+    for (int i=0; i<nDim; i++)
       Urom += aVect[i]*sigs[i];
-    }
     
-    runTime.setTime(timeDirs[timei],0);
-
     Urom.write(); // writes Urom in every time directory 
     i++;
   }

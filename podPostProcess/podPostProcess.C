@@ -15,16 +15,15 @@ License
   along with AccelerateCFD_Community_Edition.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-  podBasisCalc
+  podPostProcess
 
 Description
-  Performs proper orthogonal decomposition on the velocity field. Before
-  running make sure to leave only non-correlated time step folders.
-  Initial version of an application to perform orthogonal decomposition 
-  on the velocity field. Must be run on the root directory and will use
-  all time steps to perform calculations. At the end the eigenvalues,
-  (normalized) eigenvectors and POD modes of the solution will be calculated.
-  Requires UMean file in last time step folder.
+  This application allows users to obtain additional information from reduced order
+  as well as full order models for comparison and reference purposes. Right now this 
+  utility supports calculation of time varying coefficients from full order model
+  that can serve as a reference to reduced order time coefficients calculated using 
+  podROM utility. This utility operates based on command line arguments. All available 
+  arguments are explained in README file.
 
 Author
   Illinois Rocstar LLC
@@ -81,16 +80,6 @@ double innerProductPOD2(volTensorField v1, volSymmTensorField v2, volScalarField
   return gSum(volScalarField((v1&&v2)*cellVols));
 }
 
-bool is_numeric(std::string &strng)
-{
-    int sizeOfString = strng.length();
-    for (int i = 0; i < strng.length(); i++)
-      if (isdigit(strng[i]) == false)
-        return false;
-
-      return true;
-}
-
 int main(int argc, char *argv[])
 {
     copyrightnotice();
@@ -102,13 +91,6 @@ int main(int argc, char *argv[])
   argList::validOptions.clear();
 
   argList::validArgs.append("get_aPOD");
-	
-  argList::validArgs.append("NumOfModes");
-  argList::addOption
-  (
-    "NumOfModes",
-    "Specify number of modes to use"
-  );
 
   Foam::argList args(argc, argv);
 
@@ -118,15 +100,8 @@ int main(int argc, char *argv[])
 
   bool enable_aPOD = false;
 
-  int udfDim = 0;
-
-  if ((argsVec.size() > 1) && (argsVec[1] == "get_aPOD")) {
+  if ((argsVec.size() > 1) && (argsVec[1] == "get_aPOD"))
     enable_aPOD = true;
-
-    if (is_numeric(argsVec[2])) {
-      udfDim = std::atoi(argv[2]);
-    }
-  }
 
   if (enable_aPOD) {
 
@@ -180,8 +155,6 @@ int main(int argc, char *argv[])
   double dt = (double) dt_ds.value(); //FDM time step
   double nu_tilda = (double) closure_nu.value(); //closure viscosity
 
-  if (udfDim > 0)
-    nDim = udfDim;
   
   runTime.setTime(timeDirs.last(),0);
     

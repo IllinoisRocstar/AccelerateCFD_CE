@@ -13,7 +13,7 @@ more info, please see the **LICENSE** file. OpenFOAM is Copyright (C) 2011-2017 
 
 ## Version ##
 
-Version 0.1.0
+Version 0.2.0 (View *[CHANGELOG](https://git.illinois.rocstar/POD/AccelerateCFD/community-edition/blob/master/CHANGELOG)* Here.)
 
 AccelerateCFD_Community_Edition follows semantic versioning. The versions will be major.minor.patch. We will:
 
@@ -43,6 +43,7 @@ There are five modules to this software.
 
   **podPostProcess**
   * This application allows users to obtain additional information from reduced order as well as full order models for comparison and reference purposes. Right now this utility supports calculation of time varying coefficients from full order model that can serve as a reference to reduced order time coefficients calculated using podROM utility. This utility operates based on command line arguments. All available arguments are explained later in this guide.
+
 
 ## Platform Requirements ##
 
@@ -85,7 +86,6 @@ Lastly, podDict file from podDict_master needs to be copied in "constant" folder
     $ cd podDict/
     $ cp podDict ${ACFD_Source_Path}/SampleCase/constant
   
-
 User needs podDict and podROM into case folder at their respective locations mentioned above.
 
 ## Running Test Case Example ##
@@ -98,22 +98,24 @@ Navigate to the case directory and run blockMesh utility to build the mesh.
     $ cd ${ACFD_Source_Path}/SampleCase
     $ blockMesh
 
-If user wants run the case in parallel. Please edit system/decomposeParDict for "numberOfSubdomains" equal to number of processors. Type the following commands to decompose the mesh and run the case.
+If user wants run the case in parallel, please edit system/decomposeParDict for "numberOfSubdomains" equal to number of processors. Type the following commands to decompose the mesh and run the case..
 
     $ decomposePar
     $ mpirun -np <number of processors> pisoFoam -parallel
 
-Once, the parallel case run is over, reconstruct the solution using following command.
-
-    $ reconstructPar
+Once the parallel run in finished, user does not need to reconstruct the case as AccelerateCFD utilities works on decomposed case in parallel.
 
 If user wants to run the case using just one processor, run the case using "pisoFoam" command.
 
     $ pisoFoam
 
-After the calculations are over, user can go ahead and calculate the basis. Run **podBasisCalc** to calculate basis vectors. This will store all the basis vectors in last time directory of case.
+After the serial/parallel calculations are over, user can go ahead and calculate the basis. Run **podBasisCalc** to calculate basis vectors. This will store all the basis vectors in last time directory of case. podBasisCalc utility provides users with an option to specify number of basis to write in last time directory (i.e for writing basis up to 50, use podBasisCalc 50). If user want to write all the basis in last time step folder, use 0 (i.e podBasisCalc 0). Another optional argument with podBasisCalc provides users with ability to define custom time range for snapshots selection using -time argument. This argument is also available with podPrecompute and podFlowReconstuct. 
     
-    $ podBasisCalc
+    $ podBasisCalc <number of basis to write> -time <start>:<end>
+
+To run podBasisCalc in parallel
+
+    $ mpirun -np <number of processors> podBasisCalc <number of basis to write> -time <start>:<end> -parallel
   
 Let the process finish and you will see that last time directory has several basis written as sigma_0, sigma_1, etc... Now, if you notice in the main case directory, there will be a CSV file named "podEnergy.csv". Open the file and you will see that for this case, only first 5-6 POD bases vectors has cummulative energy of above 99%. This suggests that any basis vectors after that contains very small length scales (Try visualizing them in paraView). This can be used to decide number of POD basis to use to run reduced order model. A utility **plotPOD.py** is included to help users visualize energy content of POD modes.
 
@@ -133,18 +135,26 @@ Navigate to the constant folder of CFD case directory open podDict to edit.
 * Term **artificial_nu** is artificial viscosity term that helps reducing the decay in velocity dynamics after few seconds of reduced order model runtime. Change this term according to the non-linearity of CFD case. Positive value will add and negative value will substract to the viscosity  
 * Keep last 2 values (writeFreq, and tEnd) as default unless you have made changes to the time loop in any of the applications and you know what you are doing. Otherwise, all the applications will figure out your case timestep and case runtime automatically.
 
-After saving and closing podDict file, let's pre-computed some data.
+After saving and closing podDict file, let's pre-computed some data. User needs to make sure that if the optional **-time** argument was used during calculation of basis, it needs to be used for podPrecompute and podFlowReconstruct as well.
   
     $ cd ..
-    $ podPrecompute
+    $ podPrecompute -time <start>:<end>
+
+To run podPrecompute in parallel,
+
+    $ mpirun -np <number of processors> podPrecompute -time <start>:<end> -parallel
+
+This will generate bunch of CSV files in case directory. DO NOT CHANGE ANYTHING IN THOSE FILES. To calculate the time varying coefficients, run podROM as per below. Note that podROM utility runs on single processor. Additionally user can define one optional argument with this program to use certain number of basis for computation of time varying coefficients instead of number of basis specified in podDict. This allows users to test stability of their ROM with various number of basis. Note that maximum number for this argument must not be more than number of basis specified in podDict file.
   
-This will generate bunch of CSV files in case directory. DO NOT CHANGE ANYTHING IN THOSE FILES. To calculate the time varying coefficients, run podROM as per below
-  
-    $ ./podROM
+    $ ./podROM <# of basis>
   
 Once the process completes, you will see an additional CSV file which contains values of time varying coefficients of ROM. Finally, as we have POD basis and time varying coefficients, we are ready to reconstruct velocity fields.
   
-    $ podFlowReconstruct
+    $ podFlowReconstruct -time <start>:<end>
+
+To run podFlowReconstruct in parallel,
+
+    $ mpirun -np <number of processors> podFlowReconstruct -time <start>:<end> -parallel
   
 Now every time directory in CFD case has a new vector file named "Urom".
 This is the reconstructed velocity. If you have noticed, the calculations done by "podPrecompute" , "podROM", and "podReconstruct" took much less time than full LES CFD calculation would have taken. Compare both full order **(U)** and reconstructed **(Urom)** velocities in Paraview.
@@ -153,12 +163,12 @@ AccelerateCFD has a post process utility which allows users to get some addition
 
 To initiate calculation of full order time varying coefficients (here called as "aPOD"), user needs to run following command. This will output "aPOD.csv" file.
 
-    $ podPostProcess get_aPOD <Specify Number of Modes to Use> (i.e podPostProcess get_aPOD 100)
+    $ podPostProcess get_aPOD
 
 For parallel run,
 
-    $ mpirun -np <number of processors> podPostProcess get_aPOD <Specify Number of Modes to Use> -parallel
-  
+    $ mpirun -np <number of processors> podPostProcess get_aPOD -parallel
+
 
 ## Contact/Feedback/Issues ##
 

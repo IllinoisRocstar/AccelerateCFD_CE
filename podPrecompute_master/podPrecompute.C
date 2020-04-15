@@ -34,12 +34,17 @@ Author
 #include "IFstream.H"
 #include "OFstream.H"
 #include "fvc.H"
-#include <Eigen/Dense>
 #include <vector>
+#include <iostream>
+#include <iomanip>
+#include <math.h>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <map>
+#include <iterator>
 
 using namespace Foam;
-using namespace Eigen;
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -79,6 +84,38 @@ void copyrightnotice()
   << std::endl;
 }
 
+volVectorField generateMeshField(Foam::Time &runTime, Foam::fvMesh &mesh,
+    const std::string &fieldName) {
+    
+  volVectorField mshField
+  (
+    IOobject
+    (
+      fieldName,
+      runTime.timeName(),
+      mesh,
+      IOobject::MUST_READ,
+      IOobject::NO_WRITE
+    ),
+    mesh
+  );
+
+  return mshField;
+}
+
+IOobject generateCustomField(Foam::Time &runTime, Foam::fvMesh &mesh,
+    const std::string &fieldName) {
+    
+    return IOobject
+    (
+      fieldName,
+      runTime.timeName(),
+      mesh,
+      IOobject::NO_READ,
+      IOobject::NO_WRITE
+    );
+}
+
 int main(int argc, char *argv[])
 {
   copyrightnotice();
@@ -88,6 +125,8 @@ int main(int argc, char *argv[])
   double duration;
   start = std::clock();
 
+  timeSelector::addOptions();
+
   #include "setRootCase.H"       
   #include "createTime.H"
   #include "createNamedMesh.H"
@@ -95,20 +134,8 @@ int main(int argc, char *argv[])
   instantList timeDirs = timeSelector::select0(runTime, args);
 
   // read initial velocity
-  runTime.setTime(timeDirs[0],0); 
-    
-  volVectorField U
-  (
-    IOobject
-    (
-      "U",
-      runTime.timeName(),
-      mesh,
-      IOobject::MUST_READ,
-      IOobject::NO_WRITE
-    ),
-    mesh
-  );
+  runTime.setTime(timeDirs[0],0);
+  volVectorField U = generateMeshField(runTime,mesh,"U");
 
   // Reads user-defined data from podDict in constant directory
   IOdictionary podDict
@@ -123,37 +150,19 @@ int main(int argc, char *argv[])
     )
   );
 
-  dimensionedScalar nDim_ds
-  (
-  podDict.lookup("nDim")
-  );
-  dimensionedScalar nu_ds
-  (
-  podDict.lookup("nu")
-  );
-  dimensionedScalar writeFreq_ds
-  (
-  podDict.lookup("writeFreq")
-  );
-  dimensionedScalar tEnd_ds
-  (
-  podDict.lookup("tEnd")
-  );
-  dimensionedScalar dt_ds
-  (
-  podDict.lookup("dt")
-  );
-  dimensionedScalar closure_nu
-  (
-  podDict.lookup("artificial_nu")
-  );
+  dimensionedScalar nDim_ds(podDict.lookup("nDim"));
+  dimensionedScalar nu_ds(podDict.lookup("nu"));
+  dimensionedScalar writeFreq_ds(podDict.lookup("writeFreq"));
+  dimensionedScalar tEnd_ds(podDict.lookup("tEnd"));
+  dimensionedScalar dt_ds(podDict.lookup("dt"));
+  dimensionedScalar closure_nu(podDict.lookup("artificial_nu"));
 
-  int nDim = (int) nDim_ds.value(); //# of modes used
-  double nu = (double) nu_ds.value(); //nu value
-  int writeFreq = (int) writeFreq_ds.value(); //Closure model update frequency
-  double tEnd = (double) tEnd_ds.value(); //closure model runtime end
-  double dt = (double) dt_ds.value(); //FDM time step
-  double nu_tilda = (double) closure_nu.value(); //closure viscosity
+  int nDim = static_cast<int>(nDim_ds.value());              //# of modes used
+  double nu = static_cast<double>(nu_ds.value());            //nu value
+  int writeFreq = static_cast<int>(writeFreq_ds.value());    //Closure model update frequency
+  double tEnd = static_cast<double>(tEnd_ds.value());        //closure model runtime end
+  double dt = static_cast<double>(dt_ds.value());            //FDM time step
+  double nu_tilda = static_cast<double>(closure_nu.value()); //closure viscosity
 
   // Reads important data for reduced order model from controlDict
   IOdictionary controlDict
@@ -168,15 +177,22 @@ int main(int argc, char *argv[])
     )
   );
 
-  scalar staTime( readScalar(runTime.controlDict().lookup("startTime")));
-  scalar endTime( readScalar(runTime.controlDict().lookup("endTime")));
+  double staTime = timeDirs.first().value();
+  double endTime = timeDirs.last().value();
   scalar deltaT( readScalar(runTime.controlDict().lookup("deltaT")));
   scalar writeInterval( readScalar(runTime.controlDict().lookup("writeInterval")));
+  word writeControl( word(runTime.controlDict().lookup("writeControl")));
+
+  if (tEnd == 0)
+    tEnd = endTime;
 
   double tSteps = (endTime - staTime)/deltaT;
   double runCase = (endTime - staTime);
-  double numDirs = tSteps/writeInterval;
-  double firstDir = ( endTime - staTime)/numDirs;
+  double numDirs;
+  if (writeControl == "runTime" || writeControl == "adjustableRunTime")
+    numDirs = (endTime - staTime)/writeInterval;
+  else if (writeControl == "timeStep")
+    numDirs = tSteps/writeInterval;
 
   // Reading cellVolumes from mesh
   runTime.setTime(timeDirs.last(),0);
@@ -198,18 +214,8 @@ int main(int argc, char *argv[])
 
   int nRows = cellVolume.size(); // Total number of cells
 
-  volVectorField UMean // Reading mean velocity from last time step
-  (
-    IOobject
-    (
-      "UMean",
-      runTime.timeName(),
-      mesh,
-      IOobject::MUST_READ,
-      IOobject::NO_WRITE
-    ),
-    mesh
-  );
+  // Reading mean velocity from last time step
+  volVectorField UMean = generateMeshField(runTime,mesh,"UMean");
 
   std::vector<volVectorField> sigs; // vector for storing POD basis
   std::vector<volTensorField> gradSigs; // tensor for storing gradient of POD basis
@@ -220,36 +226,72 @@ int main(int argc, char *argv[])
   {
     std::string sigmaName;
     sigmaName = "sigma_" + std::to_string(iSig);
-        
-    sigs.push_back
-    (
-      volVectorField
-      (
-        IOobject
-        (
-          sigmaName,
-          runTime.timeName(),
-          mesh,
-          IOobject::MUST_READ,
-          IOobject::NO_WRITE
-        ),
-      mesh
-      )
-    );
+    sigs.push_back(generateMeshField(runTime,mesh,sigmaName));
 
-    volVectorField tmp1 = sigs[iSig];
-    gradSigs.push_back(fvc::grad(tmp1));
-               
-    laplSigs.push_back(fvc::laplacian(tmp1));
+    volVectorField tmp1 = generateMeshField(runTime,mesh,sigmaName);
+
+    volTensorField tmp2(fvc::grad(tmp1));
+
+    std::string laplaName;
+    laplaName = "Lapla_" + std::to_string(iSig);
+    volVectorField tmp3(generateCustomField(runTime,mesh,laplaName),
+                        fvc::laplacian(tmp1));
+  
+    gradSigs.push_back(tmp2);
+    laplSigs.push_back(tmp3);
   } 
 
 
-  volVectorField UPrime = U-UMean; //velocity fluctuations
+  //velocity fluctuations
+  volVectorField UPrime(generateCustomField(runTime,mesh,"UPrime"),U-UMean);
 
   //Calculations of gradients required for reduced order model (ROM)
-  volTensorField gradU = fvc::grad(UMean);
-  volVectorField UgradU = UMean&gradU;
-  volVectorField laplUMean = fvc::laplacian(UMean);
+  volTensorField gradU(fvc::grad(UMean));
+
+  volVectorField UgradU(generateCustomField(runTime,mesh,"UgradU"),UMean&gradU);
+
+  volVectorField laplUMean(generateCustomField(runTime,mesh,"laplUMean"),
+                           fvc::laplacian(UMean));
+
+  // Precompute all volVector/Tensor terms in ROM loop
+  std::vector<volVectorField> sigGradSigs;
+  for (int i=0; i<nDim*nDim; i++) {
+    std::string sigGradSigsName;
+    sigGradSigsName = "sigGradSigsName_" + std::to_string(i);
+
+    volVectorField tmpName(generateCustomField(runTime,mesh,sigGradSigsName),
+                           mesh,
+                           dimensionedVector("zero",dimensionSet(0,1,-2,0,0,0,0),Zero));
+
+    sigGradSigs.push_back(tmpName);
+  }
+
+  std::vector<volVectorField> uGradSigs;
+  std::vector<volVectorField> sigGradUs;
+  for (int i=0; i<nDim; i++) {
+    std::string uGradSigName;
+    uGradSigName = "uGradSigName_" + std::to_string(i);
+    volVectorField uGradSig(generateCustomField(runTime,mesh,uGradSigName),
+                            UMean&gradSigs[i]);
+
+    uGradSigs.push_back(uGradSig);
+
+    std::string sigGradUName;
+    sigGradUName = "sigGradUName_" + std::to_string(i);
+    volVectorField sigGradU(generateCustomField(runTime,mesh,sigGradUName),
+                            sigs[i]&gradU);
+    sigGradUs.push_back(sigGradU);
+  }
+
+  for (int i=0; i<nDim; i++) {
+    for (int j=0; j<nDim; j++) {
+      std::string sigGradSigName;
+      sigGradSigName = "sigGradSigName_" + std::to_string(i+nDim*j);
+      volVectorField sigGradSig(generateCustomField(runTime,mesh,sigGradSigName),
+                                sigs[i]&gradSigs[j]);
+      sigGradSigs[i+nDim*j] = sigGradSig;
+    }
+  }
 
   std::vector<double> constant(nDim,0.0);
   std::vector<std::vector<double>> linear(nDim, std::vector<double>(nDim,0.0));
@@ -257,20 +299,13 @@ int main(int argc, char *argv[])
 
   // this loop calculates the Galerkin System matrices Q L C for the ROM equation. 
   // constant term, linear term, and quadratic term
-  for (int k=0; k<nDim; k++)
-  {
+  for (int k=0; k<nDim; k++) {
     constant[k] = -1*innerProductPOD(sigs[k],UgradU,cellVolume)+ (nu+nu_tilda)*innerProductPOD(sigs[k],laplUMean,cellVolume);
-    for (int m=0; m<nDim; m++)
-    {
-      volVectorField uGradSig = UMean&fvc::grad(sigs[m]);
-      volVectorField sigGradU = sigs[m]&gradU;
-
-      linear[k][m] = -1*innerProductPOD(sigs[k],uGradSig,cellVolume)
-      - innerProductPOD(sigs[k],sigGradU,cellVolume) + (nu+nu_tilda)*innerProductPOD(sigs[k],laplSigs[m],cellVolume);
-      
-      for (int n=0; n<nDim; n++){
-        volVectorField sigGradSig = sigs[m]&gradSigs[n];
-        quadratic[k][m][n] = -1*innerProductPOD(sigs[k],sigGradSig,cellVolume);
+    for (int m=0; m<nDim; m++) {
+      linear[k][m] = -1*innerProductPOD(sigs[k],uGradSigs[m],cellVolume)
+      - innerProductPOD(sigs[k],sigGradUs[m],cellVolume) + (nu+nu_tilda)*innerProductPOD(sigs[k],laplSigs[m],cellVolume);
+      for (int n=0; n<nDim; n++) {
+        quadratic[k][m][n] = -1*innerProductPOD(sigs[k],sigGradSigs[m+nDim*n],cellVolume);
       }
     }
   }
@@ -286,11 +321,11 @@ int main(int argc, char *argv[])
   myfile << nRows << nl;
   myfile << runCase << nl;
   myfile << numDirs << nl;
-  myfile << firstDir << nl;
+  myfile << staTime << nl;
   myfile.close();
 
   // calculating initial time coefficients a from initial velocity fluctuation field
-  Eigen::VectorXd avalsPrev(nDim);
+  std::vector<double> avalsPrev(nDim,0.0);
   for (int i=0; i<nDim; i++){
     avalsPrev[i] = innerProductPOD(sigs[i],UPrime,cellVolume);
   }
@@ -309,34 +344,24 @@ int main(int argc, char *argv[])
 
   // writing avalues
   for (int i=0; i<nDim; i++){
-    oldA << "" << avalsPrev[i] << nl;
+    oldA << std::fixed << std::setprecision(16) << "" << avalsPrev[i] << nl;
   }
 
   for (int i=0; i<nDim; i++){
-    con << "" << constant[i] << nl;
+    con << std::fixed << std::setprecision(16) << i << "," << constant[i] << nl;
   }
 
   for (int i=0; i<nDim; i++){
     for (int j=0; j<nDim;j++){
-      if (j==0){
-        lin << "" << linear[i][j];
-      }else{
-        lin << "," << linear[i][j];
-      }
+      lin << std::fixed << std::setprecision(16) << i + nDim*j << "," << linear[i][j] << nl;
     }
-    lin << nl;
   }
 
-  for (int k=0; k<nDim; k++){
-    for (int i=0; i<nDim; i++){
-      for (int j=0; j<nDim;j++){
-        if (j==0){
-          quad << "" << quadratic[k][i][j];
-        }else{
-          quad << "," << quadratic[k][i][j];
-        }
+  for (int i=0; i<nDim; i++){
+    for (int j=0; j<nDim; j++){
+      for (int k=0; k<nDim;k++){
+        quad << std::fixed << std::setprecision(16) << i+j*nDim+k*nDim*nDim << "," << quadratic[i][j][k] << nl;
       }
-      quad << nl;
     }
   }
 

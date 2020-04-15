@@ -70,6 +70,38 @@ void copyrightnotice()
   << std::endl;
 }
 
+volVectorField generateMeshField(Foam::Time &runTime, Foam::fvMesh &mesh,
+    const std::string &fieldName) {
+    
+  volVectorField mshField
+  (
+    IOobject
+    (
+      fieldName,
+      runTime.timeName(),
+      mesh,
+      IOobject::MUST_READ,
+      IOobject::NO_WRITE
+    ),
+    mesh
+  );
+
+  return mshField;
+}
+
+IOobject generateCustomField(Foam::Time &runTime, Foam::fvMesh &mesh,
+    const std::string &fieldName) {
+    
+    return IOobject
+    (
+      fieldName,
+      runTime.timeName(),
+      mesh,
+      IOobject::NO_READ,
+      IOobject::AUTO_WRITE
+    );
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -80,20 +112,43 @@ int main(int argc, char *argv[])
   double duration;
   start = std::clock();
 
-  #include "setRootCase.H"
+  argList::validArgs.append("basisToWrite");
+  argList::addOption
+  (
+    "basisToWrite",
+    "amount",
+    "Specify number of basis to write"
+  );
 
-  if (args.optionFound("list"))
+  timeSelector::addOptions();
+
+  // Add a function to only select user defined times as snapshots
+
+  Foam::argList args(argc, argv);
+  if (!args.checkRootCase())
   {
-    functionObjectList::list();
-    return 0;
+    Foam::FatalError.exit();
   }
 
+  int numBasis = 0;
+
+  if (!args.check())
+    numBasis = 0;
+  else
+    numBasis = std::stoi(args[1]);  
+  
   #include "createTime.H" 
   #include "createNamedMesh.H"  
   instantList timeDirs = timeSelector::select0(runTime, args);
-    
+
   // defining correlation matrix Cmn
   int nDim(timeDirs.size());
+
+  if (numBasis > nDim) {
+    std::cerr << "Please select number of basis between 1 and " << nDim << std::endl;
+    throw;
+  }
+
   Eigen::MatrixXd Cmn(nDim, nDim);
    
   int m,n;
@@ -120,18 +175,7 @@ int main(int argc, char *argv[])
     
   // Reading mean velocity for case from last time step. This will be used for calculating..
   // basis as well as for reduced order model
-  volVectorField UMean
-  (
-    IOobject
-    (
-      "UMean",
-      runTime.timeName(),
-      mesh,
-      IOobject::MUST_READ,
-      IOobject::NO_WRITE
-    ),
-    mesh
-  );
+  volVectorField UMean = generateMeshField(runTime,mesh,"UMean");
 
   // Reading and storing all velocities from every time directories into a vector.
   std::vector<volVectorField> vels;
@@ -140,19 +184,7 @@ int main(int argc, char *argv[])
   forAll(timeDirs, timei)
   {
     runTime.setTime(timeDirs[timei], timei);
-        
-    volVectorField U
-    (
-      IOobject
-      (
-        "U",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::NO_WRITE
-      ),
-      mesh
-    );       
+    volVectorField U = generateMeshField(runTime,mesh,"U");   
     vels.push_back(U-UMean); // Extracting mean velocity from the flow to..
                              // get velocity fluctuations. POD basis will..
                              // represent these fluctuations in velocities
@@ -178,18 +210,8 @@ int main(int argc, char *argv[])
         continue;
       }
 
-      volScalarField U1dotU2
-      (
-        IOobject
-        (
-          "U1dotU2",
-          runTime.timeName(),
-          mesh,
-          IOobject::NO_READ,
-          IOobject::AUTO_WRITE
-        ),
-        (vels[timei]&vels[timej])*cellVolume
-      );
+      volScalarField U1dotU2(generateCustomField(runTime,mesh,"U1dotU2"),
+                             (vels[timei]&vels[timej])*cellVolume);
 
       Cmn(m,n) = Cmn(m,n) + gSum(U1dotU2);
       n++;
@@ -238,9 +260,9 @@ int main(int argc, char *argv[])
   // Writing energy contained in basis to CSV file
   ofstream myfile;
   myfile.open ("podEnergy.csv");
-  myfile << "Basis#,Individual_Energy_in_Basis(%),Cummulative_Energy_in_Basis_upto_Current_Basis(%)" << nl;
+  myfile << "Basis#,Individual_Energy_in_Basis(%),Cummulative_Energy_in_Basis_upto_Current_Basis(%), Eigen_Values" << nl;
   for (int i=0; i<nDim; i++)
-    myfile << podNum[i] << "," << indEnergy[i] << "," << totalEnergy[i] << nl;
+    myfile << podNum[i] << "," << indEnergy[i] << "," << totalEnergy[i] << ", " << eigVal[i] << nl;
 
   myfile.close();
 
@@ -271,24 +293,19 @@ int main(int argc, char *argv[])
   // Calculation of POD basis using eigenvectors and velocities
   Info << "Saving pod basis in " << runTime.timeName() << endl;
 
-  for (int iSig=0; iSig<nDim-1; iSig++)
+  if (numBasis == 0)
+    numBasis = nDim-1;
+
+  if (numBasis == nDim)
+    numBasis = nDim-1;
+  
+  for (int iSig=0; iSig<numBasis; iSig++)
   {
     std::string sigmaName;
     sigmaName = "sigma_" + std::to_string(iSig);
-       
-    volVectorField sigma
-    (
-      IOobject
-      (
-        sigmaName,
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::AUTO_WRITE
-      ),
-      mesh,
-      dimensionedVector("0",dimLength/dimTime,Zero)
-    );
+
+    volVectorField sigma(generateCustomField(runTime,mesh,sigmaName),mesh,
+                         dimensionedVector("0",dimLength/dimTime,Zero));
        
     // Constructing POD basis from eigen vectors and velocities
     forAll(timeDirs, timei)
