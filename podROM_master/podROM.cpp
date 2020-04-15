@@ -210,6 +210,7 @@ int main(int argc, char *argv[])
   afiles.open("avals.csv");
 
   for (int t=0; t<nSteps+1; t++){
+    cout << "t = " << timeElapsed << endl; // Case progress info in terminal
     for (int i=0; i<nDim; i++) {
       double da = constant[i];
       for (int j=0; j<nDim; j++) {
@@ -236,7 +237,6 @@ int main(int argc, char *argv[])
     }
 
     timeElapsed += dt; 
-    cout << "t = " << timeElapsed << endl; // Case progress info in terminal
   }
   afiles.close();
 
