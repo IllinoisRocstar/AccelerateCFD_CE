@@ -74,7 +74,7 @@ After "wmake all" command, let the process finish.
 After compiling above 3 applications using "wmake all", user can move on to compile the main application **podROM.cpp**. Note that podROM.cpp application does not use OpenFOAM environment so it cannot be compiled using wmake. User will compile it using g++ compiler. Follow steps below to compile **podROM.cpp**.
 
     $ cd podROM_master/
-    $ g++ -std=c++11 podROM.cpp -o podROM
+    $ g++ -std=c++11 -O3 podROM.cpp -o podROM
 
 This will generate an executable named **podROM**. This executable needs to be copied in CFD case directory to perform calculations. Let's consider sample CFD case provided here.
 
