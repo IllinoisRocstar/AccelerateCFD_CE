@@ -172,6 +172,7 @@ For parallel run,
 
 ## Contact/Feedback/Issues ##
 
-* For any issues, please open a new issue here and developer team will help you resolve it.
-* For feedback/contact purpose, please visit www.illinoisrocstar.com/about/contact
+* For any issues, please open a new issue here and the developer team will help you resolve it.
+* For feedback/contact purpose, please visit www.illinoisrocstar.com/about/contact 
+* You may also email the project lead at tpgrunloh@illinoisrocstar.com
 
