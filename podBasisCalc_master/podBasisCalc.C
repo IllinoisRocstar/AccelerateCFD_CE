@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
   {
     runTime.setTime(timeDirs[timei], timei);
     volVectorField U = generateMeshField(runTime,mesh,"U");   
-    vels.push_back(U-UMean); // Extracting mean velocity from the flow to..
+    vels.push_back(volVectorField(U-UMean)); // Extracting mean velocity from the flow to..
                              // get velocity fluctuations. POD basis will..
                              // represent these fluctuations in velocities
   }
