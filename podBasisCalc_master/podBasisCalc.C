@@ -294,10 +294,10 @@ int main(int argc, char *argv[])
   Info << "Saving pod basis in " << runTime.timeName() << endl;
 
   if (numBasis == 0)
-    numBasis = nDim-1;
+    numBasis = nDim;
 
   if (numBasis == nDim)
-    numBasis = nDim-1;
+    numBasis = nDim;
   
   for (int iSig=0; iSig<numBasis; iSig++)
   {
