@@ -13,7 +13,7 @@ more info, please see the **LICENSE** file. OpenFOAM is Copyright (C) 2011-2017 
 
 ## Version ##
 
-Version 0.2.0 (View *[CHANGELOG](https://git.illinois.rocstar/POD/AccelerateCFD/community-edition/blob/master/CHANGELOG)* Here.)
+Version 0.3.0 (View *[CHANGELOG](https://github.com/IllinoisRocstar/AccelerateCFD_CE/blob/master/CHANGELOG)* Here.)
 
 AccelerateCFD_Community_Edition follows semantic versioning. The versions will be major.minor.patch. We will:
 
@@ -50,9 +50,10 @@ There are five modules to this software.
 AccelerateCFD works on Linux plateform with following installed:
 
   * OpenFOAM v4.0 and higher
+  * CMake
   * A C++11-standard-compliant compiler
   * Paraview or similar visualization software (optional)
-  * AccelerateCFD_Community_Edition has been tested on Ubuntu 16.04 and 18.04 with OpenFOAM v4.0, OpenFOAM v5.0, OpenFOAM v6.0, and OpenFOAM v7.0.
+  * AccelerateCFD_Community_Edition has been tested on Ubuntu 16.04 and 18.04 with OpenFOAM v4.0, OpenFOAM v5.0, OpenFOAM v6.0, OpenFOAM v7.0, and OpenFOAM v2006.
   
   
 ## Installation & Getting Started ##
@@ -67,24 +68,11 @@ First step is to compile the modules. Follow the procedure below.
 
     $ ACFD_Source_Path=/full/path/to/AccelerateCFD
     $ cd ${ACFD_Source_Path}
-    $ wmake all
+    $ mkdir build && cd build
+    $ cmake ..
+    $ make -j($nproc) && make install
 
-After "wmake all" command, let the process finish.
-
-After compiling above 3 applications using "wmake all", user can move on to compile the main application **podROM.cpp**. Note that podROM.cpp application does not use OpenFOAM environment so it cannot be compiled using wmake. User will compile it using g++ compiler. Follow steps below to compile **podROM.cpp**.
-
-    $ cd podROM_master/
-    $ g++ -std=c++11 -O3 podROM.cpp -o podROM
-
-This will generate an executable named **podROM**. This executable needs to be copied in CFD case directory to perform calculations. Let's consider sample CFD case provided here.
-
-    $ cp podROM ${ACFD_Source_Path}/SampleCase/
-
-Lastly, podDict file from podDict_master needs to be copied in "constant" folder of CFD case directory.
-
-    $ cd ..
-    $ cd podDict/
-    $ cp podDict ${ACFD_Source_Path}/SampleCase/constant
+This will install all utilities.
   
 User needs podDict and podROM into case folder at their respective locations mentioned above.
 

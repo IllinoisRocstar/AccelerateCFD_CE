@@ -1,3 +1,9 @@
+
+v0.3.0
+
+- Reformed build system from wmake based to Cmake
+- Added support for Openfoam.com versions (v1906, v2006, v2012, etc)
+
 v0.2.0
 
 - Users can now run podBasisCalc, podPrecompute, and podFlowReconstruct in parallel (on decomposed case).

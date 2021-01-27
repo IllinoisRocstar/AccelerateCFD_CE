@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/users/apatel/Downloads/AccelerateCFD_CE/utilities/podROM.C
+iostream
+-
+iomanip
+-
+math.h
+-
+string
+-
+sstream
+-
+fstream
+-
+vector
+-
+map
+-
+iterator
+-
+
