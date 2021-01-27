@@ -73,8 +73,6 @@ First step is to compile the modules. Follow the procedure below.
     $ make -j($nproc) && make install
 
 This will install all utilities.
-  
-User needs podDict and podROM into case folder at their respective locations mentioned above.
 
 ## Running Test Case Example ##
 
