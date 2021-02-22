@@ -82,8 +82,6 @@ set( CMAKE_MODULE_LINKER_FLAGS "-Xlinker --copy-dt-needed-entries -Xlinker --no-
 set( CMAKE_SHARED_LINKER_FLAGS "-Xlinker --copy-dt-needed-entries -Xlinker --no-as-needed" )
 set( CMAKE_EXE_LINKER_FLAGS "-Xlinker --copy-dt-needed-entries -Xlinker --no-as-needed" )
 
-find_package( MPI REQUIRED )
-include_directories( ${MPI_INCLUDE_PATH} )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/externalLibraries)
 include_directories(${OPNF_INCLUDE_DIRS})
 
