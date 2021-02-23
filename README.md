@@ -72,7 +72,10 @@ First step is to compile the modules. Follow the procedure below.
     $ cmake ..
     $ make -j($nproc) && make install
 
-This will install all utilities.
+This will install all utilities in the OpenFOAM applications bin directory (i.e /home/username/OpenFOAM/OpenFOAM-x.0/platforms/linux64GccDPInt32Opt/bin). If user wants to install these utilities in custom location, comment out line #7 to #10 in CMakeLists.txt file and specify custom install location using,
+
+    $ cmake -DCMAKE_INSTALL_PREFIX=/custom/install/path ..
+    $ make -j($nproc) && make install
 
 ## Running Test Case Example ##
 
