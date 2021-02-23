@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.1)
 set(PROJECT_NAME "AccelerateCFD_CE")
 project(${PROJECT_NAME} CXX)
 
-# SET(DEFAULT_INSTALL_PREFIX "$ENV{FOAM_USER_APPBIN}/../" CACHE PATH "Prefix prepended to
-# install directories")
-# SET(CMAKE_INSTALL_PREFIX "${DEFAULT_INSTALL_PREFIX}" CACHE INTERNAL "Prefix
-# prepended to install directories" FORCE)
+SET(DEFAULT_INSTALL_PREFIX "$ENV{FOAM_USER_APPBIN}/../" CACHE PATH "Prefix prepended to
+install directories")
+SET(CMAKE_INSTALL_PREFIX "${DEFAULT_INSTALL_PREFIX}" CACHE INTERNAL "Prefix
+prepended to install directories" FORCE)
 
 set(ACFD_CE_MAJOR_VERSION 0)
 set(ACFD_CE_MINOR_VERSION 3)
