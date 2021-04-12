@@ -109,7 +109,30 @@ set(ACFD_CE_SRC
 add_library(AccelerateCFD_CE ${ACFD_CE_SRC})
 
 target_include_directories(AccelerateCFD_CE
-  PUBLIC ${OPNF_INCLUDE_DIRS})
+  PUBLIC 
+  $ENV{FOAM_SRC}/OSspecific/POSIX/lnInclude
+  $ENV{FOAM_SRC}/OpenFOAM/lnInclude
+  $ENV{FOAM_SRC}/triSurface/lnInclude
+  $ENV{FOAM_SRC}/parallel/decompose/decompositionMethods/lnInclude
+  $ENV{FOAM_SRC}/mesh/snappyHexMesh/lnInclude
+  $ENV{FOAM_SRC}/fileFormats/lnInclude
+  $ENV{FOAM_SRC}/surfMesh/lnInclude
+  $ENV{FOAM_SRC}/dynamicMesh/lnInclude
+  $ENV{FOAM_SRC}/lagrangian/basics/lnInclude
+  $ENV{FOAM_APP}/utilities/postProcessing/dataConversion/foamToVTK/foamToVTK/lnInclude
+  $ENV{FOAM_SRC}/edgeMesh/lnInclude
+  $ENV{FOAM_SRC}/mesh/blockMesh/lnInclude
+  $ENV{FOAM_SRC}/transportModels/incompressible/singlePhaseTransportModel
+  $ENV{FOAM_SRC}/TurbulenceModels/turbulenceModels/lnInclude
+  $ENV{FOAM_SRC}/TurbulenceModels/incompressible/lnInclude
+  $ENV{FOAM_SRC}/TurbulenceModels/compressible/lnInclude
+  $ENV{FOAM_SRC}/transportModels/compressible/lnInclude
+  $ENV{FOAM_SRC}/thermophysicalModels/basic/lnInclude
+  $ENV{FOAM_SRC}/finiteVolume/lnInclude
+  $ENV{FOAM_SRC}/fvOptions/lnInclude
+  $ENV{FOAM_SRC}/meshTools/lnInclude
+  $ENV{FOAM_SRC}/sampling/lnInclude
+)
 
 target_link_libraries(AccelerateCFD_CE
   PUBLIC
