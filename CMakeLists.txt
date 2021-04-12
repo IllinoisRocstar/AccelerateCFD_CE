@@ -67,23 +67,36 @@ endmacro(opt)
 # set options
 opt(TESTING "Enable testing" ${DEFAULT})
 
-# OF 5.x, 6.x, and 7.x
-find_package(OpenFOAM REQUIRED COMPONENTS OpenFOAM turbulenceModels 
-	incompressibleTurbulenceModels compressibleTurbulenceModels 
-	incompressibleTransportModels compressibleTransportModels 
-	fluidThermophysicalModels specie finiteVolume fvOptions genericPatchFields 
-	meshTools sampling distributed)
-
-message(STATUS "OpenFOAM include directory ${OPNF_INCLUDE_DIRS}")
-message(STATUS "OpenFOAM link directory ${OPNF_LIBRARY_DIRS}")
-
 set( CMAKE_CXX_FLAGS "-Wall -Wextra -Wold-style-cast -Wnon-virtual-dtor -Wno-unused-parameter -Wno-invalid-offsetof -ftemplate-depth-100 -DOMPI_SKIP_MPICXX -O3 -fPIC" )
 set( CMAKE_MODULE_LINKER_FLAGS "-Xlinker --copy-dt-needed-entries -Xlinker --no-as-needed" )
 set( CMAKE_SHARED_LINKER_FLAGS "-Xlinker --copy-dt-needed-entries -Xlinker --no-as-needed" )
 set( CMAKE_EXE_LINKER_FLAGS "-Xlinker --copy-dt-needed-entries -Xlinker --no-as-needed" )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/externalLibraries)
-include_directories(${OPNF_INCLUDE_DIRS})
+include_directories(
+  $ENV{FOAM_SRC}/OSspecific/POSIX/lnInclude
+  $ENV{FOAM_SRC}/OpenFOAM/lnInclude
+  $ENV{FOAM_SRC}/triSurface/lnInclude
+  $ENV{FOAM_SRC}/parallel/decompose/decompositionMethods/lnInclude
+  $ENV{FOAM_SRC}/mesh/snappyHexMesh/lnInclude
+  $ENV{FOAM_SRC}/fileFormats/lnInclude
+  $ENV{FOAM_SRC}/surfMesh/lnInclude
+  $ENV{FOAM_SRC}/dynamicMesh/lnInclude
+  $ENV{FOAM_SRC}/lagrangian/basics/lnInclude
+  $ENV{FOAM_APP}/utilities/postProcessing/dataConversion/foamToVTK/foamToVTK/lnInclude
+  $ENV{FOAM_SRC}/edgeMesh/lnInclude
+  $ENV{FOAM_SRC}/mesh/blockMesh/lnInclude
+  $ENV{FOAM_SRC}/transportModels/incompressible/singlePhaseTransportModel
+  $ENV{FOAM_SRC}/TurbulenceModels/turbulenceModels/lnInclude
+  $ENV{FOAM_SRC}/TurbulenceModels/incompressible/lnInclude
+  $ENV{FOAM_SRC}/TurbulenceModels/compressible/lnInclude
+  $ENV{FOAM_SRC}/transportModels/compressible/lnInclude
+  $ENV{FOAM_SRC}/thermophysicalModels/basic/lnInclude
+  $ENV{FOAM_SRC}/finiteVolume/lnInclude
+  $ENV{FOAM_SRC}/fvOptions/lnInclude
+  $ENV{FOAM_SRC}/meshTools/lnInclude
+  $ENV{FOAM_SRC}/sampling/lnInclude
+)
 
 set(ACFD_CE_SRC
   utilities/podBasisCalc.C
@@ -99,7 +112,22 @@ target_include_directories(AccelerateCFD_CE
   PUBLIC ${OPNF_INCLUDE_DIRS})
 
 target_link_libraries(AccelerateCFD_CE
-  PUBLIC ${OPNF_LIBRARIES})
+  PUBLIC
+  $ENV{FOAM_LIBBIN}/libOpenFOAM.so
+  $ENV{FOAM_LIBBIN}/libturbulenceModels.so
+  $ENV{FOAM_LIBBIN}/libincompressibleTurbulenceModels.so
+  $ENV{FOAM_LIBBIN}/libcompressibleTurbulenceModels.so
+  $ENV{FOAM_LIBBIN}/libincompressibleTransportModels.so
+  $ENV{FOAM_LIBBIN}/libcompressibleTransportModels.so
+  $ENV{FOAM_LIBBIN}/libfluidThermophysicalModels.so
+  $ENV{FOAM_LIBBIN}/libspecie.so
+  $ENV{FOAM_LIBBIN}/libfiniteVolume.so
+  $ENV{FOAM_LIBBIN}/libfvOptions.so
+  $ENV{FOAM_LIBBIN}/libgenericPatchFields.so
+  $ENV{FOAM_LIBBIN}/libmeshTools.so
+  $ENV{FOAM_LIBBIN}/libsampling.so
+  $ENV{FOAM_LIBBIN}/libdistributed.so
+)
 
 add_executable(podBasisCalc utilities/podBasisCalc.C)
 add_executable(podPrecompute utilities/podPrecompute.C)
