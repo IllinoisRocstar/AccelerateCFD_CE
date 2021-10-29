@@ -86,11 +86,10 @@ include_directories(
   $ENV{FOAM_APP}/utilities/postProcessing/dataConversion/foamToVTK/foamToVTK/lnInclude
   $ENV{FOAM_SRC}/edgeMesh/lnInclude
   $ENV{FOAM_SRC}/mesh/blockMesh/lnInclude
-  $ENV{FOAM_SRC}/transportModels/incompressible/singlePhaseTransportModel
-  $ENV{FOAM_SRC}/TurbulenceModels/turbulenceModels/lnInclude
-  $ENV{FOAM_SRC}/TurbulenceModels/incompressible/lnInclude
-  $ENV{FOAM_SRC}/TurbulenceModels/compressible/lnInclude
-  $ENV{FOAM_SRC}/transportModels/compressible/lnInclude
+  $ENV{FOAM_SRC}/transportModels/singlePhaseTransportModel
+  $ENV{FOAM_SRC}/MomentumTransportModels/momentumTransportModels/lnInclude
+  $ENV{FOAM_SRC}/MomentumTransportModels/incompressible/lnInclude
+  $ENV{FOAM_SRC}/MomentumTransportModels/compressible/lnInclude
   $ENV{FOAM_SRC}/thermophysicalModels/basic/lnInclude
   $ENV{FOAM_SRC}/finiteVolume/lnInclude
   $ENV{FOAM_SRC}/fvOptions/lnInclude
@@ -122,11 +121,10 @@ target_include_directories(AccelerateCFD_CE
   $ENV{FOAM_APP}/utilities/postProcessing/dataConversion/foamToVTK/foamToVTK/lnInclude
   $ENV{FOAM_SRC}/edgeMesh/lnInclude
   $ENV{FOAM_SRC}/mesh/blockMesh/lnInclude
-  $ENV{FOAM_SRC}/transportModels/incompressible/singlePhaseTransportModel
-  $ENV{FOAM_SRC}/TurbulenceModels/turbulenceModels/lnInclude
-  $ENV{FOAM_SRC}/TurbulenceModels/incompressible/lnInclude
-  $ENV{FOAM_SRC}/TurbulenceModels/compressible/lnInclude
-  $ENV{FOAM_SRC}/transportModels/compressible/lnInclude
+  $ENV{FOAM_SRC}/transportModels/singlePhaseTransportModel
+  $ENV{FOAM_SRC}/MomentumTransportModels/momentumTransportModels/lnInclude
+  $ENV{FOAM_SRC}/MomentumTransportModels/incompressible/lnInclude
+  $ENV{FOAM_SRC}/MomentumTransportModels/compressible/lnInclude
   $ENV{FOAM_SRC}/thermophysicalModels/basic/lnInclude
   $ENV{FOAM_SRC}/finiteVolume/lnInclude
   $ENV{FOAM_SRC}/fvOptions/lnInclude
@@ -137,11 +135,9 @@ target_include_directories(AccelerateCFD_CE
 target_link_libraries(AccelerateCFD_CE
   PUBLIC
   $ENV{FOAM_LIBBIN}/libOpenFOAM.so
-  $ENV{FOAM_LIBBIN}/libturbulenceModels.so
-  $ENV{FOAM_LIBBIN}/libincompressibleTurbulenceModels.so
-  $ENV{FOAM_LIBBIN}/libcompressibleTurbulenceModels.so
+  $ENV{FOAM_LIBBIN}/libmomentumTransportModels.so
+  $ENV{FOAM_LIBBIN}/libincompressibleMomentumTransportModels.sok
   $ENV{FOAM_LIBBIN}/libincompressibleTransportModels.so
-  $ENV{FOAM_LIBBIN}/libcompressibleTransportModels.so
   $ENV{FOAM_LIBBIN}/libfluidThermophysicalModels.so
   $ENV{FOAM_LIBBIN}/libspecie.so
   $ENV{FOAM_LIBBIN}/libfiniteVolume.so
