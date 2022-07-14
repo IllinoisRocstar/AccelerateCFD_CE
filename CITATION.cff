@@ -1,0 +1,83 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  AccelerateCFD - Parameterized Model Order Reduction
+  Strategy for Fast Running CFD-Quality Transient
+  Transport
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Taiyo
+    family-names: Wilson
+    affiliation: Illinois Rocstar LLC
+  - given-names: Timothy
+    family-names: Grunloh
+    affiliation: Illinois Rocstar LLC
+  - given-names: Luke
+    family-names: Calian
+    email: lcalian@illinoisrocstar.com
+    affiliation: Illinois Rocstar LLC
+  - given-names: Joel
+    family-names: Khristy
+    email: jkhristy@illinoisrocstar.com
+    affiliation: Illinois Rocstar LLC
+  - given-names: Akash
+    family-names: Patel
+    affiliation: Illinois Rocstar LLC
+  - given-names: Seth
+    family-names: Pemberton
+    email: spemberton@illinoisrocstar.com
+    affiliation: Illinois Rocstar LLC
+  - given-names: Pavle
+    family-names: Simonovic
+    affiliation: Illinois Rocstar LLC
+  - given-names: Junsoo
+    family-names: Yoo
+    affiliation: Idaho National Laboratory
+repository-code: 'https://github.com/IllinoisRocstar/AccelerateCFD_CE'
+abstract: >-
+  AccelerateCFD is a reduced order modeling software
+  system for assembling parametric, high-fidelity,
+  fluid flow surrogate models. AccelerateCFD provides
+  a comparable level of fidelity to traditional CFD
+  simulations but run in a fraction of the time.
+  Formulations and test cases were constructed
+  to tailor the AccelerateCFD technology for design
+  problems in nuclear reactor thermal hydraulic flow
+  applications. The AccelerateCFD tool is based on a
+  novel formulation of the POD ROM evolution
+  equations that enables direct control of specific
+  boundary conditions. With a properly constructed
+  parameterized model, the user can provide arbitrary
+  transient functions, within clearly defined bounds,
+  as input into boundary conditions. AccelerateCFD
+  then models the response of the system to the input
+  transient. This capability is useful for cases such
+  as uncertainty quantification or design, where many
+  similar model evaluations are required. While the
+  time to construct the initial AccelerateCFD model
+  will be substantial, this process need occur only
+  once. When many runs are required, the total
+  speedup can be several orders of magnitude. A major
+  goal of this project was to ensure that the
+  AccelerateCFD technology was developed into as an
+  easy-to-use ROM software. A community edition of
+  the code was published on a public code repository
+  with the capability of producing ROMs of velocity
+  or scalar transport CFD models. The parameterized
+  ROM capabilities are currently held proprietary in
+  an Illinois Rocstar internal code repository. The
+  community edition provides several tutorial cases,
+  user-friendly input file, and interfaces with the
+  open-source CFD library OpenFOAM.
+keywords:
+  - >-
+    reduced order modeling, CFD, proper orthogonal
+    decomposition, fast-running, Galerkin projection
+license: GPL-3.0
+version: 0.3.0
+date-released: '2020-01-01'
